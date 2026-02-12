@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Whistle — Player Profile</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --primary: #6366f1; --primary-dark: #4f46e5; --accent: #ec4899; --success: #10b981; --dark: #1f2937; --light: #f3f4f6; --border: #e5e7eb; --text: #374151; }
+    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: linear-gradient(135deg, var(--light) 0%, #e0e7ff 100%); color: var(--text); }
+    body { display: flex; flex-direction: column; overflow-x: hidden; padding: 20px; }
+    .header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+    .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { font-size: 14px; opacity: 0.9; }
+    .container { max-width: 500px; margin: 0 auto; }
+    .profile-card { background: white; border-radius: 16px; padding: 32px 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); margin-bottom: 16px; }
+    .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 36px; margin: 0 auto 16px; }
+    .username { font-size: 24px; font-weight: 700; color: var(--dark); text-align: center; margin-bottom: 8px; }
+    .username-hint { font-size: 12px; color: #6b7280; text-align: center; margin-bottom: 24px; }
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .stat { padding: 16px; background: var(--light); border-radius: 12px; border-left: 4px solid var(--primary); }
+    .stat.accent { border-left-color: var(--accent); }
+    .stat.success { border-left-color: var(--success); }
+    .stat-value { font-size: 28px; font-weight: 700; color: var(--dark); line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600; }
+    .recent-bets { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .recent-title { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 16px; }
+    .bet-item { padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--primary); background: var(--light); display: flex; justify-content: space-between; align-items: center; }
+    .bet-item.win { border-left-color: var(--success); }
+    .bet-item.loss { border-left-color: #ef4444; }
+    .bet-sport { font-weight: 600; color: var(--dark); }
+    .bet-status { font-size: 11px; font-weight: 600; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
+    .bet-status.pending { background: rgba(245, 158, 11, 0.2); color: #92400e; }
+    .bet-status.win { background: rgba(16, 185, 129, 0.2); color: #065f46; }
+    .bet-status.loss { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .empty-state { text-align: center; padding: 40px 16px; color: #6b7280; }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .cta-button { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 14px 28px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+    .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
+    .footer { text-align: center; margin-top: 24px; color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Whistle</h1>
+  <div class="subtitle">Player Profile & Stats</div>
+</div>
+
+<div class="container">
+  <div class="profile-card">
+    <div class="avatar" id="avatar">👤</div>
+    <div class="username" id="username">Player Name</div>
+    <div class="username-hint" id="hint">Check out this player's impressive stats!</div>
+    
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-value" id="winRate">0%</div>
+        <div class="stat-label">Win Rate</div>
+      </div>
+      <div class="stat accent">
+        <div class="stat-value" id="totalWins">0</div>
+        <div class="stat-label">Total Wins</div>
+      </div>
+    </div>
+    
+    <div class="stat-row">
+      <div class="stat success">
+        <div class="stat-value" id="bestStreak">0</div>
+        <div class="stat-label">Best Streak</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="totalBets">0</div>
+        <div class="stat-label">Total Bets</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="recent-bets">
+    <div class="recent-title">Recent Results</div>
+    <div id="betsContainer"></div>
+  </div>
+
+  <button class="cta-button" onclick="window.location.href='/'">🎯 Join Whistle Now</button>
+
+  <div class="footer">
+    <p>© 2026 Whistle • Pure Sports Picks, Zero Risk</p>
+  </div>
+</div>
+
+<script>
+async function loadProfile() {
+  const params = new URLSearchParams(window.location.search);
+  const username = params.get('user');
+  
+  if (!username) {
+    document.getElementById('betsContainer').innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No player found. Try sharing a link with a valid username!</p></div>';
+    return;
+  }
+  
+  try {
+    // Fetch user data
+    const userRes = await fetch('/users/' + username);
+    if (!userRes.ok) throw new Error('User not found');
+    const user = await userRes.json();
+    
+    document.getElementById('username').textContent = user.username;
+    document.getElementById('avatar').textContent = user.avatar || user.username[0].toUpperCase();
+    
+    // Fetch stats
+    const statsRes = await fetch('/users/' + username + '/stats');
+    const stats = await statsRes.json();
+    
+    const streakRes = await fetch('/users/' + username + '/streak');
+    const streak = await streakRes.json();
+    
+    const winRate = stats.totalResolved > 0 ? Math.round((stats.wins / stats.totalResolved) * 100) : 0;
+    document.getElementById('winRate').textContent = winRate + '%';
+    document.getElementById('totalWins').textContent = stats.wins || 0;
+    document.getElementById('totalBets').textContent = stats.totalResolved || 0;
+    document.getElementById('bestStreak').textContent = streak.bestStreak || 0;
+    
+    // Fetch recent bets
+    const betsRes = await fetch('/bets/' + username);
+    const betsData = await betsRes.json();
+    const bets = (betsData.bets || []).slice(0, 5);
+    
+    if (bets.length === 0) {
+      document.getElementById('betsContainer').innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>No bets yet. Check back soon!</p></div>';
+    } else {
+      const html = bets.map(b => {
+        let statusClass = 'pending';
+        let statusText = 'Pending';
+        if (b.outcome === 'win') { statusClass = 'win'; statusText = 'Won ✓'; }
+        else if (b.outcome === 'loss') { statusClass = 'loss'; statusText = 'Lost ✗'; }
+        return '<div class="bet-item ' + statusClass + '"><div><div class="bet-sport">' + b.sport.toUpperCase() + ' • ' + b.pick + '</div><div style="font-size: 12px; color: #6b7280; margin-top: 4px;">' + new Date(b.createdAt).toLocaleDateString() + '</div></div><span class="bet-status ' + statusClass + '">' + statusText + '</span></div>';
+      }).join('');
+      document.getElementById('betsContainer').innerHTML = html;
+    }
+  } catch (err) {
+    document.getElementById('betsContainer').innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><p>Player not found. This profile may have been deleted.</p></div>';
+  }
+}
+
+loadProfile();
+</script>
+</body>
+</html>
