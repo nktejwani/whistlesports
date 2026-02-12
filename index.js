@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -1528,46 +1527,6 @@ app.listen(PORT, () => {
   // Start scraper after server is ready
   initializeScraperSchedule();
 });
-=======
-import express from "express";
-import axios from "axios";
-import dotenv from "dotenv";
-import fs from "fs";
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
-import bcrypt from "bcrypt";
-import { OAuth2Client } from "google-auth-library";
-import Stripe from "stripe";
-import { runScraper } from "./scrapers/espn-scraper.js";
-
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
-
-// Initialize Stripe (requires STRIPE_SECRET_KEY in .env)
-const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
-const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2023-10-16' });
-
-// Logging middleware
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
-
-// Serve a tiny frontend for onboarding + sharing
-app.use(express.static("public"));
-
-// Admin auth middleware: require ADMIN_TOKEN env var or default dev token.
-function requireAdmin(req, res, next) {
-  const auth = req.headers.authorization || req.headers['x-admin-token'];
-  const token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : auth;
-  const expected = process.env.ADMIN_TOKEN || 'dev-admin-token';
-  if (!token || token !== expected) {
-    return res.status(401).json({ error: 'Unauthorized - admin token required' });
-  }
-  next();
-}
 const SPORTS = {
   nba: { key: "basketball_nba", label: "NBA" },
   nfl: { key: "americanfootball_nfl", label: "NFL" },
@@ -3058,4 +3017,3 @@ app.listen(PORT, () => {
   // Start scraper after server is ready
   initializeScraperSchedule();
 });
->>>>>>> e0d7437dc54a8b50015be92234f24ed93d260c28
