@@ -1527,39 +1527,6 @@ app.listen(PORT, () => {
   // Start scraper after server is ready
   initializeScraperSchedule();
 });
-const SPORTS = {
-  nba: { key: "basketball_nba", label: "NBA" },
-  nfl: { key: "americanfootball_nfl", label: "NFL" },
-  ncaaf: { key: "americanfootball_ncaaf", label: "College Football" },
-  ncaab: { key: "basketball_ncaab", label: "College Basketball" },
-  mlb: { key: "baseball_mlb", label: "MLB" },
-  ncaa_baseball: { key: "baseball_ncaa", label: "College Baseball" },
-  nhl: { key: "icehockey_nhl", label: "NHL" },
-  soccer: { key: "soccer_epl", label: "Soccer (EPL)" },
-  tennis: { key: "tennis_atp", label: "Tennis" },
-  golf: { key: "golf", label: "Golf" }
-};
-
-// Pathway / support settings
-const PATHWAYS = {
-  competitive: {
-    id: "competitive",
-    description: "Light, optional play with no special limits."
-  },
-  casual: {
-    id: "casual",
-    description: "Assistance pathway: strict limits and play-time restrictions to support healthy play.",
-    maxStakePerBet: 1,
-    dailySpendLimit: 5,
-    allowedStartHour: 10, // 10:00 local
-    allowedEndHour: 20, // 20:00 local
-    encouragements: [
-      "You got this — one step at a time. Try a walk instead! 🚶",
-      "Remember: betting won't fix feelings. Maybe call a friend? ☎️",
-      "Treat yourself to a snack, not a bet. Snacks > regrets. 🍪"
-    ]
-  }
-};
 
 // Persist users and bets to a local SQLite database
 fs.mkdirSync("data", { recursive: true });
