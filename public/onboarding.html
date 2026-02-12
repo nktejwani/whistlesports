@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Onboarding — Whistle</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>body{font-family:system-ui,Segoe UI,Arial;margin:24px}button{margin:6px}</style>
+</head>
+<body>
+  <h1>Onboarding</h1>
+  <p>Enter your username to resume onboarding:</p>
+  <input id="username" placeholder="username" />
+  <button id="load">Load</button>
+  <div id="status"></div>
+  <div id="steps" style="margin-top:16px"></div>
+
+  <script>
+    const loadBtn = document.getElementById('load');
+    const userIn = document.getElementById('username');
+    const status = document.getElementById('status');
+    const steps = document.getElementById('steps');
+
+    async function load() {
+      const u = userIn.value.trim();
+      if (!u) return alert('username required');
+      status.textContent = 'Loading...';
+      const r = await fetch(`/onboarding/${u}`);
+      if (!r.ok) { status.textContent = 'User not found'; return; }
+      const j = await r.json();
+      status.textContent = `Step: ${j.onboarding.step} — Completed: ${j.onboarding.completed}`;
+      render(u, j.onboarding);
+    }
+
+    function render(username, ob) {
+      steps.innerHTML = '';
+      const s = document.createElement('div');
+      s.innerHTML = `<p>Welcome, ${username} — onboarding step ${ob.step}</p>`;
+      const next = document.createElement('button');
+      next.textContent = 'Mark next step';
+      next.onclick = async () => {
+        const res = await fetch(`/onboarding/${username}`, {method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({step:(ob.step||0)+1})});
+        const j = await res.json(); ob = j.onboarding; render(username, ob);
+      };
+      const finish = document.createElement('button');
+      finish.textContent = 'Complete onboarding';
+      finish.onclick = async () => {
+        const res = await fetch(`/onboarding/${username}`, {method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({completed:true})});
+        const j = await res.json(); ob = j.onboarding; render(username, ob);
+      };
+      s.appendChild(next); s.appendChild(finish);
+      steps.appendChild(s);
+    }
+
+    loadBtn.onclick = load;
+  </script>
+</body>
+</html>

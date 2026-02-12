@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whistle — Onboarding Survey</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; max-width:600px; margin:auto }
+    label { display:block; margin-top:12px }
+    button { margin-top:12px }
+    .social { margin-top:18px }
+  </style>
+</head>
+<body>
+  <h1>Welcome — Quick Onboarding</h1>
+  <p>Tell us a bit about yourself. This creates a local demo user.</p>
+
+  <label>Username
+    <input id="username" placeholder="choose a username" />
+  </label>
+
+  <label>Favorite sport
+    <select id="favoriteSport">
+      <option value="nba">NBA</option>
+      <option value="nfl">NFL</option>
+      <option value="mlb">MLB</option>
+      <option value="soccer">Soccer</option>
+      <option value="tennis">Tennis</option>
+      <option value="golf">Golf</option>
+      <option value="ncaaf">College Football</option>
+      <option value="ncaab">College Basketball</option>
+    </select>
+  </label>
+
+  <label>Pathway
+    <label><input type="radio" name="intent" value="casual" checked /> Casual</label>
+    <label><input type="radio" name="intent" value="casual" /> Casual - Support</label>
+  </label>
+
+  <button id="create">Create account</button>
+
+  <div id="result" style="margin-top:12px"></div>
+
+  <hr />
+  <h3>Or sign in with a social provider (demo)</h3>
+  <p class="social">
+    <button data-provider="google" class="social-btn">Continue with Google</button>
+    <button data-provider="facebook" class="social-btn">Continue with Facebook</button>
+    <button data-provider="instagram" class="social-btn">Continue with Instagram</button>
+  </p>
+
+  <script>
+    async function postJson(url, body) {
+      const res = await fetch(url, {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body)
+      });
+      return res.json();
+    }
+
+    document.getElementById('create').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const favoriteSport = document.getElementById('favoriteSport').value;
+      const intent = document.querySelector('input[name="intent"]:checked').value;
+      if (!username) return alert('Please choose a username');
+
+      const body = { username, favoriteSports: [favoriteSport], intent };
+      const resp = await postJson('/users', body);
+      document.getElementById('result').textContent = JSON.stringify(resp);
+    });
+
+    document.querySelectorAll('.social-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const provider = btn.getAttribute('data-provider');
+        const username = prompt('Choose a username to link with ' + provider + ' (demo)');
+        if (!username) return;
+        const externalId = prompt('Enter external id (or leave blank to auto-generate)') || `${provider}-${Date.now()}`;
+
+        const resp = await postJson(`/auth/${provider}/login`, { externalId, username });
+        document.getElementById('result').textContent = JSON.stringify(resp);
+      });
+    });
+  </script>
+</body>
+</html>
