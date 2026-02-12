@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Whistle — Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, Segoe UI, Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+    }
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    a {
+      display: block;
+      padding: 24px;
+      background: white;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #667eea;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    a:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body>
+  <h1>🏈 Whistle</h1>
+  <p style="text-align: center; color: white; margin-bottom: 32px;">Smart sports betting with supportive pathways</p>
+  <div class="link-grid">
+    <a href="/app.html">📱 Mobile App<br><span style="font-size: 12px; color: #888;">Main betting interface (mobile-optimized)</span></a>
+    <a href="/onboarding.html">📋 Onboarding<br><span style="font-size: 12px; color: #888;">Setup wizard & progress</span></a>
+    <a href="/share.html">📤 Share<br><span style="font-size: 12px; color: #888;">Share your stats</span></a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,2011 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Whistle — Betting App</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <script async defer src="https://accounts.google.com/gsi/client"></script>
+  <script>
+    window.fbAsyncInit = function() {
+      window.FB_SDK_READY = true;
+    };
+  </script>
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .container {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+      flex: 1;
+    }
+
+    .token-balance {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      text-align: center;
+      min-width: 80px;
+    }
+
+    .token-balance-value {
+      font-size: 20px;
+      font-weight: 700;
+      display: block;
+      line-height: 1;
+    }
+
+    .token-balance-label {
+      font-size: 11px;
+      opacity: 0.9;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* Login Screen */
+    .login-form {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-top: 40px;
+    }
+
+    .login-form h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #555;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .bet-card {
+      border-left: 4px solid #667eea;
+    }
+
+    .bet-card.win {
+      border-left-color: #10b981;
+    }
+
+    .bet-card.loss {
+      border-left-color: #ef4444;
+    }
+
+    .bet-card.pending {
+      border-left-color: #f59e0b;
+    }
+
+    .bet-details {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .bet-detail {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bet-detail-label {
+      color: #888;
+    }
+
+    .bet-detail-value {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .bet-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    .bet-status.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .bet-status.win {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .bet-status.loss {
+      background: #fee2e2;
+      color: #7f1d1d;
+    }
+
+    .bet-status.push {
+      background: #e0e7ff;
+      color: #312e81;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tab {
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-weight: 500;
+      color: #888;
+      transition: all 0.2s;
+      margin-bottom: -2px;
+    }
+
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      max-width: 100%;
+    }
+
+    .nav-btn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #888;
+      transition: all 0.2s;
+    }
+
+    .nav-btn.active {
+      color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .nav-btn-icon {
+      font-size: 20px;
+    }
+
+    /* Status Messages */
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .alert.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+
+    .alert.success {
+      background: #d1fae5;
+      color: #065f46;
+      border-left: 4px solid #10b981;
+    }
+
+    .alert.info {
+      background: #dbeafe;
+      color: #1e40af;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 24px 0 12px 0;
+      color: #333;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .odds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .odds-option {
+      padding: 12px;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+
+    .odds-option.selected {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .odds-option-value {
+      font-weight: 600;
+      font-size: 16px;
+      color: #667eea;
+      margin-top: 4px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Social Login */
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      gap: 12px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    .social-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .google-btn {
+      width: 100% !important;
+      height: 44px !important;
+    }
+
+    .facebook-btn {
+      width: 100% !important;
+      height: 40px !important;
+      padding: 0 !important;
+      background: #1877f2 !important;
+      border: none !important;
+      border-radius: 8px !important;
+      color: white !important;
+      font-weight: 600 !important;
+      font-size: 15px !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+    }
+
+    .facebook-btn:hover {
+      background: #166fe5 !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .container {
+        padding: 12px;
+        padding-bottom: 80px;
+      }
+
+      .header {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      button {
+        padding: 16px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Register Screen -->
+    <div id="register-screen" class="screen active">
+      <div class="header">
+        <h1>🏈 Whistle</h1>
+        <p style="font-size: 14px; opacity: 0.9;">Smart sports betting with supportive pathways</p>
+      </div>
+      <div class="login-form">
+        <h2>Create Account</h2>
+        <div class="social-buttons">
+          <div id="google-register-btn" class="google-btn"></div>
+          <button id="facebook-register-btn" class="facebook-btn">
+            <span>f</span> Sign up with Facebook
+          </button>
+        </div>
+        <div class="divider">or</div>
+        <div class="form-group">
+          <label>Username</label>
+          <input id="register-username" type="text" placeholder="Enter username" />
+        </div>
+        <div class="form-group">
+          <label>Email (optional)</label>
+          <input id="register-email" type="email" placeholder="Enter email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="register-password" type="password" placeholder="Enter password (min 4 characters)" />
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input id="register-confirm" type="password" placeholder="Confirm password" />
+        </div>
+        <div class="form-group" style="display: none;">
+          <label>Betting Style</label>
+          <select id="register-intent">
+            <option value="competitive">Competitive</option>
+            <option value="casual">Casual - Support</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Favorite Sport</label>
+          <select id="register-sport">
+            <option value="nba">NBA 🏀</option>
+            <option value="nfl">NFL 🏈</option>
+            <option value="mlb">MLB ⚾</option>
+            <option value="ncaab">College Basketball 🏀</option>
+            <option value="ncaaf">College Football 🏈</option>
+            <option value="nhl">NHL 🏒</option>
+            <option value="soccer">Soccer ⚽</option>
+            <option value="tennis">Tennis 🎾</option>
+            <option value="golf">Golf ⛳</option>
+          </select>
+        </div>
+        <button id="register-btn">Create Account</button>
+        <div id="register-error" style="margin-top: 12px;"></div>
+        <div style="text-align: center; margin-top: 16px; border-top: 1px solid #ddd; padding-top: 16px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Already have an account?</p>
+          <button id="to-login-btn" style="background: white; border: 1px solid #667eea; color: #667eea; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">Log In</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen">
+      <div class="header">
+        <h1>🏈 Whistle</h1>
+        <p style="font-size: 14px; opacity: 0.9;">Smart sports betting with supportive pathways</p>
+      </div>
+      <div class="login-form">
+        <h2>Log In</h2>
+        <div class="social-buttons">
+          <div id="google-login-btn" class="google-btn"></div>
+          <button id="facebook-login-btn" class="facebook-btn">
+            <span>f</span> Log in with Facebook
+          </button>
+        </div>
+        <div class="divider">or</div>
+        <div class="form-group">
+          <label>Username</label>
+          <input id="login-username" type="text" placeholder="Enter username" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="login-password" type="password" placeholder="Enter password" />
+        </div>
+        <button id="login-btn">Log In</button>
+        <div id="login-error" style="margin-top: 12px;"></div>
+        <div style="text-align: right; margin-top: 12px;">
+          <button id="forgot-password-btn" style="background: none; border: none; color: #667eea; text-decoration: underline; cursor: pointer; font-size: 13px; padding: 0;">Forgot password?</button>
+        </div>
+        <div style="text-align: center; margin-top: 16px; border-top: 1px solid #ddd; padding-top: 16px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Don't have an account?</p>
+          <button id="to-register-btn" style="background: white; border: 1px solid #667eea; color: #667eea; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">Create Account</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-screen" class="screen">
+      <!-- Header with username and tokens -->
+      <div class="header">
+        <h1 id="app-username">Whistle</h1>
+        <div class="token-balance" onclick="openPremiumModal()" style="cursor: pointer;">
+          <span class="token-balance-value" id="token-display">0</span>
+          <div class="token-balance-label">Tokens</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="home">Home</button>
+        <button class="tab" data-tab="results">Results</button>
+        <button class="tab" data-tab="stats">Stats</button>
+        <button class="tab" data-tab="profile">Profile</button>
+      </div>
+
+      <!-- Home Tab (with Bet Placement) -->
+      <div id="tab-home" class="tab-content">
+        <div class="section-title">Test Your Luck</div>
+        
+        <!-- Sport Selector -->
+        <div class="card">
+          <div class="card-title">Select Sport</div>
+          <div class="odds-grid" id="sport-select">
+            <div class="odds-option" data-sport="nba">NBA 🏀</div>
+            <div class="odds-option" data-sport="nfl">NFL 🏈</div>
+            <div class="odds-option" data-sport="mlb">MLB ⚾</div>
+            <div class="odds-option" data-sport="ncaab">College 🏀</div>
+            <div class="odds-option" data-sport="tennis">Tennis 🎾</div>
+            <div class="odds-option" data-sport="nhl">NHL 🏒</div>
+            <div class="odds-option" data-sport="golf">Golf ⛳</div>
+            <div class="odds-option" data-sport="ncaab_baseball">College ⚾</div>
+          </div>
+        </div>
+
+        <!-- Games List -->
+        <div id="games-container" style="display: none;">
+          <div class="section-title">Available Games</div>
+          <div id="games-list"></div>
+        </div>
+
+        <!-- Bet Selection -->
+        <div id="bet-selection-container" style="display: none;">
+          <div class="section-title">Your Selection</div>
+          <div class="card" id="selected-game-display"></div>
+          
+          <div class="card">
+            <div class="form-group">
+              <label>Stake (Tokens)</label>
+              <input id="bet-stake" type="number" placeholder="1" min="1" value="1" />
+            </div>
+          </div>
+          <button id="place-bet-btn" style="margin-bottom: 20px;">Place Bet</button>
+          <div id="place-bet-error"></div>
+        </div>
+
+        <div id="loading-games" class="loading" style="display: none;">
+          <div class="spinner"></div>
+          <p style="margin-top: 8px;">Loading games...</p>
+        </div>
+      </div>
+
+      <!-- Bet Slip Modal -->
+      <div id="betslip-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; animation: fadeIn 0.2s ease-out;" onclick="closeBetslip(event)">
+        <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; padding: 20px; max-height: 80vh; overflow-y: auto; animation: slideUp 0.3s ease-out; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);" onclick="event.stopPropagation()">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px; color: #333;">Bet Slip</h2>
+            <button onclick="closeBetslip()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">×</button>
+          </div>
+          
+          <div id="betslip-content" style="margin-bottom: 20px;">
+            <!-- Game details will be inserted here -->
+          </div>
+          
+          <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Stake (Tokens)</div>
+            <input id="betslip-stake" type="number" placeholder="1" min="1" value="1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;" />
+          </div>
+          
+          <div id="betslip-error" style="margin-bottom: 12px;"></div>
+          
+          <button id="betslip-place-btn" onclick="placeBetFromSlip()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">Place Bet</button>
+        </div>
+      </div>
+
+      <!-- Reset Password Modal -->
+      <div id="reset-password-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; animation: fadeIn 0.2s ease-out;" onclick="closeResetModal(event)">
+        <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; padding: 20px; max-height: 80vh; overflow-y: auto; animation: slideUp 0.3s ease-out; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);" onclick="event.stopPropagation()">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px; color: #333;">Reset Password</h2>
+            <button onclick="closeResetModal()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">×</button>
+          </div>
+          <div id="reset-form" style="display: none;">
+            <div class="form-group">
+              <label>New Password</label>
+              <input id="reset-new-password" type="password" placeholder="Enter new password (min 4 characters)" />
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input id="reset-confirm-password" type="password" placeholder="Confirm password" />
+            </div>
+            <div id="reset-error" style="margin-bottom: 12px;"></div>
+            <button id="reset-submit-btn" onclick="submitPasswordReset()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">Reset Password</button>
+          </div>
+          <div id="reset-forgot-form">
+            <div class="form-group">
+              <label>Username</label>
+              <input id="reset-username" type="text" placeholder="Enter your username" />
+            </div>
+            <div id="reset-forgot-error" style="margin-bottom: 12px;"></div>
+            <button id="reset-forgot-btn" onclick="submitForgotPassword()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">Get Reset Link</button>
+            <div id="reset-link-display" style="margin-top: 16px; display: none; background: #f0f4ff; padding: 12px; border-radius: 8px; border: 1px solid #667eea;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Editor Modal -->
+      <div id="profile-editor-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; animation: fadeIn 0.2s ease-out;" onclick="closeProfileEditor(event)">
+        <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease-out; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);" onclick="event.stopPropagation()">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px; color: #333;">Edit Profile</h2>
+            <button onclick="closeProfileEditor()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">×</button>
+          </div>
+          
+          <div class="form-group">
+            <label>Favorite Sport</label>
+            <select id="profile-sport">
+              <option value="nba">NBA 🏀</option>
+              <option value="nfl">NFL 🏈</option>
+              <option value="mlb">MLB ⚾</option>
+              <option value="ncaab">College Basketball 🏀</option>
+              <option value="ncaaf">College Football 🏈</option>
+              <option value="nhl">NHL 🏒</option>
+              <option value="soccer">Soccer ⚽</option>
+              <option value="tennis">Tennis 🎾</option>
+              <option value="golf">Golf ⛳</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="display: none;">
+            <label>Betting Style</label>
+            <select id="profile-intent">
+              <option value="competitive">Competitive</option>
+              <option value="casual">Casual - Support</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Team Avatar</label>
+            <div id="avatar-picker" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px;">
+              <!-- Team avatars will be filled in by JavaScript -->
+            </div>
+          </div>
+
+          <div id="profile-error" style="margin-bottom: 12px;"></div>
+          <button id="profile-save-btn" onclick="saveProfile()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Save Profile</button>
+        </div>
+      </div>
+
+      <!-- Premium Upgrade Modal -->
+      <div id="premium-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; animation: fadeIn 0.2s ease-out;" onclick="closePremiumModal(event)">
+        <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease-out; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);" onclick="event.stopPropagation()">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px; color: #333;">Upgrade to Premium ⭐</h2>
+            <button onclick="closePremiumModal()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">×</button>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">1000 Tokens</div>
+            <div style="font-size: 14px; opacity: 0.9;">Get 1000 tokens per month, every month</div>
+          </div>
+
+          <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="font-size: 14px; color: #666; margin-bottom: 12px; line-height: 1.6;">
+              <div style="margin-bottom: 8px;">✓ <strong>1000 tokens</strong> added immediately to your account</div>
+              <div style="margin-bottom: 8px;">✓ <strong>Auto-renew</strong> every month so you never run out</div>
+              <div style="margin-bottom: 8px;">✓ <strong>Full access</strong> to all betting markets</div>
+              <div>✓ <strong>Priority support</strong> from our team</div>
+            </div>
+          </div>
+
+          <div id="premium-error" style="margin-bottom: 12px;"></div>
+          <button id="premium-upgrade-btn" onclick="upgradeToPremium()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Upgrade Now</button>
+          <button onclick="closePremiumModal()" style="width: 100%; padding: 14px; background: #e5e7eb; color: #333; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Results Tab -->
+      <div id="tab-results" class="tab-content" style="display: none;">
+        <div class="section-title">Active Bets</div>
+        <div id="active-bets"></div>
+        <div class="section-title" style="margin-top: 32px;">Resolved Bets</div>
+        <div id="resolved-bets"></div>
+      </div>
+
+      <!-- Stats Tab -->
+      <div id="tab-stats" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="card-title">Current Streak</div>
+          <div class="card-value" id="stat-current-streak">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Longest Win Streak Ever</div>
+          <div class="card-value" id="stat-longest-win">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Longest Losing Streak Ever</div>
+          <div class="card-value" id="stat-longest-loss">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Biggest Underdog Hit</div>
+          <div class="card-value" id="stat-biggest-underdog">-</div>
+        </div>
+      </div>
+
+      <!-- Profile Tab -->
+      <div id="tab-profile" class="tab-content" style="display: none;">
+        <div class="section-title">Account</div>
+        <div class="card">
+          <div class="card-title">Username</div>
+          <div class="card-value" id="profile-username">-</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Avatar</div>
+          <div id="profile-avatar-display" style="font-size: 32px; margin-top: 8px;">-</div>
+        </div>
+        <div class="card" style="display: none;">
+          <div class="card-title">Betting Pathway</div>
+          <div class="card-value" id="profile-intent">-</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Favorite Sport</div>
+          <div class="card-value" id="profile-sport">-</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Total Bets</div>
+          <div class="card-value" id="profile-total-bets">0</div>
+        </div>
+        <button id="edit-profile-btn" onclick="openProfileEditor()" style="margin-top: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Edit Profile</button>
+        <button id="logout-btn" style="margin-top: 10px; background: #ef4444;">Logout</button>
+        <div style="margin-top: 14px; text-align: center; font-size: 12px; color: #888;">
+          <a href="/privacy.html" style="color: #888; text-decoration: underline;">Privacy Policy</a>
+          <span style="margin: 0 6px; color: #bbb;">|</span>
+          <a href="/data-deletion.html" style="color: #888; text-decoration: underline;">Data Deletion</a>
+          <span style="margin: 0 6px; color: #bbb;">|</span>
+          <a href="/terms.html" style="color: #888; text-decoration: underline;">Terms</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-nav="home">
+      <span class="nav-btn-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" data-nav="results">
+      <span class="nav-btn-icon">📊</span>
+      <span>Results</span>
+    </button>
+    <button class="nav-btn" data-nav="stats">
+      <span class="nav-btn-icon">⭐</span>
+      <span>Stats</span>
+    </button>
+    <button class="nav-btn" data-nav="profile">
+      <span class="nav-btn-icon">👤</span>
+      <span>Profile</span>
+    </button>
+  </div>
+
+  <script>
+    // State
+    let currentUser = null;
+    let selectedSport = null;
+    let selectedGame = null;
+    let selectedMarket = null;
+    let gamesData = [];
+
+    // Elements
+    const registerScreen = document.getElementById('register-screen');
+    const loginScreen = document.getElementById('login-screen');
+    const appScreen = document.getElementById('app-screen');
+    const registerBtn = document.getElementById('register-btn');
+    const loginBtn = document.getElementById('login-btn');
+    const toLoginBtn = document.getElementById('to-login-btn');
+    const toRegisterBtn = document.getElementById('to-register-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const tabs = document.querySelectorAll('.tab');
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const sportSelect = document.querySelectorAll('#sport-select .odds-option');
+
+    // Initialize
+    function init() {
+      const saved = localStorage.getItem('whistle-user');
+      const params = new URLSearchParams(window.location.search);
+      const resetToken = params.get('reset');
+      const upgradeSuccess = params.get('upgrade-success');
+      const upgradeCanceled = params.get('upgrade-canceled');
+
+      if (resetToken) {
+        // Show reset password form
+        showResetForm(true);
+        document.getElementById('reset-password-modal').style.display = 'block';
+      } else if (saved) {
+        currentUser = saved;
+        showApp();
+        loadUserData();
+        
+        // Show upgrade status messages
+        if (upgradeSuccess === 'true') {
+          setTimeout(() => {
+            alert('🎉 Thank you for upgrading to Premium! Your 1000 tokens have been added. Please refresh the page to see your updated balance.');
+            window.history.replaceState({}, document.title, '/app.html');
+          }, 500);
+        } else if (upgradeCanceled === 'true') {
+          setTimeout(() => {
+            alert('Upgrade cancelled. Feel free to try again anytime!');
+            window.history.replaceState({}, document.title, '/app.html');
+          }, 500);
+        }
+      }
+      initializeGoogle();
+      initializeFacebook();
+    }
+
+    // Google Sign-In Initialization
+    async function initializeGoogle() {
+      if (!window.google) {
+        console.warn('Google SDK not loaded yet');
+        setTimeout(initializeGoogle, 100);
+        return;
+      }
+
+      try {
+        // Fetch configuration from server
+        const configRes = await fetch('/config');
+        const config = await configRes.json();
+        
+        if (!config.googleClientId) {
+          console.warn('Google Client ID not configured');
+          return;
+        }
+
+        // Initialize Google Sign-In with callback
+        google.accounts.id.initialize({
+          client_id: config.googleClientId,
+          callback: handleGoogleCallback
+        });
+
+        // Expose Stripe publishable key to the frontend (if provided)
+        window.STRIPE_PUBLISHABLE_KEY = config.stripePublishableKey || '';
+
+        // Render buttons
+        google.accounts.id.renderButton(
+          document.getElementById('google-register-btn'),
+          {
+            type: 'standard',
+            size: 'large',
+            width: '100%',
+            theme: 'outline',
+            text: 'signup_with'
+          }
+        );
+
+        google.accounts.id.renderButton(
+          document.getElementById('google-login-btn'),
+          {
+            type: 'standard',
+            size: 'large',
+            width: '100%',
+            theme: 'outline',
+            text: 'signin_with'
+          }
+        );
+      } catch (err) {
+        console.error('Failed to initialize Google Sign-In:', err);
+      }
+    }
+
+    // Google Sign-In Callback
+    function handleGoogleCallback(response) {
+      handleGoogleToken(response.credential);
+    }
+
+    // Handle Google ID Token
+    async function handleGoogleToken(idToken) {
+      try {
+        const res = await fetch('/auth/google', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ idToken })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          const errorEl = loginScreen.classList.contains('active')
+            ? document.getElementById('login-error')
+            : document.getElementById('register-error');
+          errorEl.innerHTML = '<div class="alert error">' + (data.error || 'Google login failed') + '</div>';
+          return;
+        }
+
+        currentUser = data.user.username;
+        localStorage.setItem('whistle-user', currentUser);
+        document.getElementById('login-error').innerHTML = '';
+        document.getElementById('register-error').innerHTML = '';
+        showApp();
+        loadUserData();
+      } catch (err) {
+        const errorEl = loginScreen.classList.contains('active')
+          ? document.getElementById('login-error')
+          : document.getElementById('register-error');
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      }
+    }
+
+    function bindFacebookButtons() {
+      const registerBtn = document.getElementById('facebook-register-btn');
+      const loginBtn = document.getElementById('facebook-login-btn');
+
+      if (!registerBtn || !loginBtn) return;
+      if (registerBtn.dataset.bound === 'true' && loginBtn.dataset.bound === 'true') return;
+
+      registerBtn.dataset.bound = 'true';
+      loginBtn.dataset.bound = 'true';
+
+      registerBtn.onclick = (e) => {
+        e.preventDefault();
+        facebookLogin();
+      };
+
+      loginBtn.onclick = (e) => {
+        e.preventDefault();
+        facebookLogin();
+      };
+    }
+
+    // Facebook Sign-In Initialization
+    async function initializeFacebook() {
+      try {
+        bindFacebookButtons();
+
+        // Fetch configuration from server
+        const configRes = await fetch('/config');
+        const config = await configRes.json();
+
+        window.FACEBOOK_APP_ID = config.facebookAppId || '';
+
+        if (!window.FACEBOOK_APP_ID) {
+          console.warn('Facebook App ID not configured');
+          return;
+        }
+
+        if (!window.FB) {
+          console.warn('Facebook SDK not loaded yet');
+          setTimeout(initializeFacebook, 100);
+          return;
+        }
+
+        if (window.FB_INITIALIZED) return;
+
+        // Initialize FB SDK once app ID is known
+        FB.init({
+          appId: window.FACEBOOK_APP_ID,
+          xfbml: true,
+          version: 'v18.0'
+        });
+        window.FB_INITIALIZED = true;
+      } catch (err) {
+        console.error('Failed to initialize Facebook:', err);
+      }
+    }
+
+    // Facebook Login Handler
+    function facebookLogin() {
+      const errorEl = loginScreen.classList.contains('active')
+        ? document.getElementById('login-error')
+        : document.getElementById('register-error');
+
+      if (!window.FACEBOOK_APP_ID) {
+        errorEl.innerHTML = '<div class="alert error">Facebook App ID not configured. Set FACEBOOK_APP_ID in .env.</div>';
+        return;
+      }
+
+      if (!window.FB || !window.FB_INITIALIZED) {
+        errorEl.innerHTML = '<div class="alert error">Facebook SDK not ready. Please refresh and try again.</div>';
+        return;
+      }
+
+      FB.login((response) => {
+        if (response.authResponse) {
+          const accessToken = response.authResponse.accessToken;
+          handleFacebookToken(accessToken);
+        } else {
+          errorEl.innerHTML = '<div class="alert error">Facebook login cancelled</div>';
+        }
+      }, { scope: 'public_profile,email' });
+    }
+
+    // Handle Facebook Access Token
+    async function handleFacebookToken(accessToken) {
+      try {
+        const res = await fetch('/auth/facebook', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ accessToken })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          const errorEl = loginScreen.classList.contains('active')
+            ? document.getElementById('login-error')
+            : document.getElementById('register-error');
+          errorEl.innerHTML = '<div class="alert error">' + (data.error || 'Facebook login failed') + '</div>';
+          return;
+        }
+
+        currentUser = data.user.username;
+        localStorage.setItem('whistle-user', currentUser);
+        document.getElementById('login-error').innerHTML = '';
+        document.getElementById('register-error').innerHTML = '';
+        showApp();
+        loadUserData();
+      } catch (err) {
+        const errorEl = loginScreen.classList.contains('active')
+          ? document.getElementById('login-error')
+          : document.getElementById('register-error');
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      }
+    }
+
+    // Forgot Password Handler
+    document.getElementById('forgot-password-btn').onclick = () => {
+      showResetForm(false);
+      document.getElementById('reset-password-modal').style.display = 'block';
+    };
+
+    function closeResetModal(event) {
+      if (event && event.target.id !== 'reset-password-modal') return;
+      document.getElementById('reset-password-modal').style.display = 'none';
+      document.getElementById('reset-username').value = '';
+      document.getElementById('reset-new-password').value = '';
+      document.getElementById('reset-confirm-password').value = '';
+      document.getElementById('reset-error').innerHTML = '';
+      document.getElementById('reset-forgot-error').innerHTML = '';
+      document.getElementById('reset-link-display').style.display = 'none';
+    }
+
+    function showResetForm(show) {
+      document.getElementById('reset-form').style.display = show ? 'block' : 'none';
+      document.getElementById('reset-forgot-form').style.display = show ? 'none' : 'block';
+    }
+
+    async function submitForgotPassword() {
+      const username = document.getElementById('reset-username').value.trim();
+      const errorEl = document.getElementById('reset-forgot-error');
+      const linkDisplay = document.getElementById('reset-link-display');
+
+      if (!username) {
+        errorEl.innerHTML = '<div class="alert error">Username required</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.innerHTML = '<div class="alert error">' + (data.error || 'Failed to generate reset link') + '</div>';
+          return;
+        }
+
+        // Show reset link for testing (in production, would send via email)
+        linkDisplay.innerHTML = `
+          <strong>Reset Link:</strong><br>
+          <span style="word-break: break-all; font-size: 12px; font-family: monospace;">` + data.resetLink + `</span><br>
+          <div style="margin-top: 8px; font-size: 12px; color: #666;">Token: ` + data.token + `</div>
+        `;
+        linkDisplay.style.display = 'block';
+        errorEl.innerHTML = '<div class="alert success">Reset link generated! Copy it or use the token below.</div>';
+        document.getElementById('reset-username').value = '';
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      }
+    }
+
+    async function submitPasswordReset() {
+      const newPassword = document.getElementById('reset-new-password').value;
+      const confirmPassword = document.getElementById('reset-confirm-password').value;
+      const errorEl = document.getElementById('reset-error');
+
+      if (!newPassword || newPassword.length < 4) {
+        errorEl.innerHTML = '<div class="alert error">Password must be at least 4 characters</div>';
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        errorEl.innerHTML = '<div class="alert error">Passwords do not match</div>';
+        return;
+      }
+
+      // Get token from URL params
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('reset');
+
+      if (!token) {
+        errorEl.innerHTML = '<div class="alert error">Reset token not found in URL</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/auth/reset-password/' + token, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ password: newPassword })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.innerHTML = '<div class="alert error">' + (data.error || 'Password reset failed') + '</div>';
+          return;
+        }
+
+        errorEl.innerHTML = '<div class="alert success">Password reset successfully! You can now log in with your new password.</div>';
+        document.getElementById('reset-new-password').value = '';
+        document.getElementById('reset-confirm-password').value = '';
+        setTimeout(() => {
+          closeResetModal();
+          window.location.href = '/app.html';
+        }, 2000);
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      }
+    }
+
+    // Team avatars for profile selection
+    const TEAM_AVATARS = {
+      nba: [
+        { name: 'Lakers', emoji: '🟣', code: 'lakers' },
+        { name: 'Celtics', emoji: '🟢', code: 'celtics' },
+        { name: 'Warriors', emoji: '🔵', code: 'warriors' },
+        { name: 'Heat', emoji: '🔴', code: 'heat' }
+      ],
+      nfl: [
+        { name: 'Chiefs', emoji: '🔴', code: 'chiefs' },
+        { name: 'Patriots', emoji: '🔵', code: 'patriots' },
+        { name: 'Cowboys', emoji: '⭐', code: 'cowboys' },
+        { name: 'Packers', emoji: '💛', code: 'packers' }
+      ],
+      nhl: [
+        { name: 'Rangers', emoji: '🔵', code: 'rangers' },
+        { name: 'Maple Leafs', emoji: '🟢', code: 'leafs' },
+        { name: 'Penguins', emoji: '🖤', code: 'penguins' },
+        { name: 'Bruins', emoji: '🟡', code: 'bruins' }
+      ],
+      mlb: [
+        { name: 'Yankees', emoji: '⚪', code: 'yankees' },
+        { name: 'Red Sox', emoji: '🔴', code: 'redsox' },
+        { name: 'Dodgers', emoji: '🔵', code: 'dodgers' },
+        { name: 'Giants', emoji: '🟠', code: 'giants' }
+      ]
+    };
+
+    function openProfileEditor() {
+      const sport = document.getElementById('profile-sport').textContent.toLowerCase().split(' ')[0];
+      document.getElementById('profile-sport').value = sport || 'nba';
+      
+      // Default to competitive (intent selector hidden from UI)
+      document.getElementById('profile-intent').value = 'competitive';
+
+      // Build avatar picker for selected sport
+      const avatarPicker = document.getElementById('avatar-picker');
+      avatarPicker.innerHTML = '';
+      
+      const teamList = TEAM_AVATARS[sport] || TEAM_AVATARS.nba;
+      teamList.forEach(team => {
+        const btn = document.createElement('button');
+        btn.onclick = (e) => {
+          e.preventDefault();
+          document.querySelectorAll('#avatar-picker button').forEach(b => b.style.background = 'white');
+          btn.style.background = '#667eea';
+          btn.style.color = 'white';
+          selectedAvatar = team.code;
+        };
+        btn.style.padding = '12px';
+        btn.style.border = '2px solid #ddd';
+        btn.style.borderRadius = '8px';
+        btn.style.cursor = 'pointer';
+        btn.style.fontSize = '24px';
+        btn.innerHTML = team.emoji + '<br><span style="font-size: 10px; color: #666;">' + team.name + '</span>';
+        avatarPicker.appendChild(btn);
+      });
+
+      document.getElementById('profile-editor-modal').style.display = 'block';
+      window.selectedAvatar = null;
+    }
+
+    function closeProfileEditor(event) {
+      if (event && event.target.id !== 'profile-editor-modal') return;
+      document.getElementById('profile-editor-modal').style.display = 'none';
+      document.getElementById('profile-error').innerHTML = '';
+    }
+
+    async function saveProfile() {
+      const sport = document.getElementById('profile-sport').value;
+      const intent = "competitive"; // Always use competitive
+      const avatar = window.selectedAvatar;
+      const errorEl = document.getElementById('profile-error');
+
+      try {
+        const res = await fetch('/users/' + currentUser, {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            favoriteSports: [sport],
+            avatar: avatar,
+            intent: intent
+          })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.innerHTML = '<div class="alert error">' + (data.error || 'Failed to save profile') + '</div>';
+          return;
+        }
+
+        errorEl.innerHTML = '<div class="alert success">Profile updated!</div>';
+        closeProfileEditor();
+        loadUserData(); // Refresh user data
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      }
+    }
+
+    // Premium upgrade modal handlers
+    function openPremiumModal() {
+      document.getElementById('premium-modal').style.display = 'block';
+      document.getElementById('premium-error').innerHTML = '';
+    }
+
+    function closePremiumModal(event) {
+      if (event && event.target.id !== 'premium-modal') return;
+      document.getElementById('premium-modal').style.display = 'none';
+      document.getElementById('premium-error').innerHTML = '';
+    }
+
+    async function upgradeToPremium() {
+      const errorEl = document.getElementById('premium-error');
+      const btnEl = document.getElementById('premium-upgrade-btn');
+
+      if (!currentUser) {
+        errorEl.innerHTML = '<div class="alert error">Not logged in</div>';
+        return;
+      }
+
+      try {
+        btnEl.disabled = true;
+        btnEl.textContent = 'Redirecting to checkout...';
+
+        const res = await fetch('/users/' + currentUser + '/premium-checkout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: '{}'
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          errorEl.innerHTML = '<div class="alert error">' + (err.error || 'Checkout failed') + '</div>';
+          btnEl.disabled = false;
+          btnEl.textContent = 'Upgrade Now';
+          return;
+        }
+
+        const data = await res.json();
+        // Redirect to Stripe checkout
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          errorEl.innerHTML = '<div class="alert error">No checkout URL received</div>';
+          btnEl.disabled = false;
+          btnEl.textContent = 'Upgrade Now';
+        }
+
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+        btnEl.disabled = false;
+        btnEl.textContent = 'Upgrade Now';
+      }
+    }
+
+    // Switch to login screen
+    toLoginBtn.onclick = () => {
+      registerScreen.classList.remove('active');
+      loginScreen.classList.add('active');
+      document.getElementById('login-error').innerHTML = '';
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+    };
+
+    // Switch to register screen
+    toRegisterBtn.onclick = () => {
+      loginScreen.classList.remove('active');
+      registerScreen.classList.add('active');
+      document.getElementById('register-error').innerHTML = '';
+      document.getElementById('register-username').value = '';
+      document.getElementById('register-password').value = '';
+      document.getElementById('register-confirm').value = '';
+    };
+
+    // Register
+    registerBtn.onclick = async () => {
+      const username = document.getElementById('register-username').value.trim();
+      const email = document.getElementById('register-email').value.trim() || null;
+      const password = document.getElementById('register-password').value;
+      const confirm = document.getElementById('register-confirm').value;
+      const intent = "competitive"; // Always use competitive
+      const sport = document.getElementById('register-sport').value;
+      const errorEl = document.getElementById('register-error');
+
+      if (!username) {
+        errorEl.innerHTML = '<div class="alert error">Username required</div>';
+        return;
+      }
+
+      if (!password || password.length < 4) {
+        errorEl.innerHTML = '<div class="alert error">Password must be at least 4 characters</div>';
+        return;
+      }
+
+      if (password !== confirm) {
+        errorEl.innerHTML = '<div class="alert error">Passwords do not match</div>';
+        return;
+      }
+
+      registerBtn.disabled = true;
+      try {
+        const res = await fetch('/users', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username, email, password, favoriteSports: [sport], intent })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+          errorEl.innerHTML = '<div class="alert error">' + (data.error || 'Registration failed') + '</div>';
+          registerBtn.disabled = false;
+          return;
+        }
+        
+        currentUser = username;
+        localStorage.setItem('whistle-user', username);
+        errorEl.innerHTML = '';
+        showApp();
+        loadUserData();
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      } finally {
+        registerBtn.disabled = false;
+      }
+    };
+
+    // Login
+    loginBtn.onclick = async () => {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-error');
+
+      if (!username || !password) {
+        errorEl.innerHTML = '<div class="alert error">Username and password required</div>';
+        return;
+      }
+
+      loginBtn.disabled = true;
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+          errorEl.innerHTML = '<div class="alert error">' + (data.error || 'Login failed') + '</div>';
+          loginBtn.disabled = false;
+          return;
+        }
+        
+        currentUser = username;
+        localStorage.setItem('whistle-user', username);
+        errorEl.innerHTML = '';
+        showApp();
+        loadUserData();
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      } finally {
+        loginBtn.disabled = false;
+      }
+    };
+
+    // Logout
+    logoutBtn.onclick = () => {
+      currentUser = null;
+      localStorage.removeItem('whistle-user');
+      registerScreen.classList.add('active');
+      loginScreen.classList.remove('active');
+      appScreen.classList.remove('active');
+      document.getElementById('register-username').value = '';
+      document.getElementById('register-password').value = '';
+      document.getElementById('register-confirm').value = '';
+      document.getElementById('register-error').innerHTML = '';
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-error').innerHTML = '';
+    };
+
+    // Show app
+    function showApp() {
+      registerScreen.classList.remove('active');
+      loginScreen.classList.remove('active');
+      appScreen.classList.add('active');
+    }
+
+    // Load user data
+    async function loadUserData() {
+      try {
+        const res = await fetch(`/users/${currentUser}`);
+        const user = await res.json();
+        document.getElementById('app-username').textContent = currentUser;
+        document.getElementById('token-display').textContent = user.tokens || 0;
+        document.getElementById('profile-username').textContent = user.username;
+        document.getElementById('profile-sport').textContent = (user.favoriteSports || [])[0] || 'None';
+        document.getElementById('profile-avatar-display').textContent = user.avatar || '👤';
+
+        // Load bets
+        const betsRes = await fetch(`/bets/${currentUser}`);
+        const bets = await betsRes.json();
+        document.getElementById('profile-total-bets').textContent = bets.length;
+
+        // Render bets
+        renderActiveBets(bets);
+        renderResolvedBets(bets);
+        renderStats(bets, user);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Fetch games for selected sport
+    async function loadGamesForSport(sport) {
+      const loadingEl = document.getElementById('loading-games');
+      const gamesContainer = document.getElementById('games-container');
+      const gamesList = document.getElementById('games-list');
+      const betSelectionContainer = document.getElementById('bet-selection-container');
+
+      loadingEl.style.display = 'block';
+      gamesContainer.style.display = 'none';
+      betSelectionContainer.style.display = 'none';
+
+      try {
+        const res = await fetch(`/odds/simple?sport=${sport}`);
+        const data = await res.json();
+        
+        // Support both array responses and { success, games } wrapper
+        const games = Array.isArray(data) ? data : (data && Array.isArray(data.games) ? data.games : []);
+        gamesData = games.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+        if (gamesData.length === 0) {
+          gamesList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏈</div><p>No games available for this sport</p></div>';
+          gamesContainer.style.display = 'block';
+          loadingEl.style.display = 'none';
+          return;
+        }
+
+        // Render games
+        gamesList.innerHTML = gamesData.map((game, idx) => {
+          const spreads = game.odds.filter(o => o.market === 'spread');
+          const totals = game.odds.filter(o => o.market === 'total');
+          const moneylines = game.odds.filter(o => o.market === 'moneyline');
+          const startTime = new Date(game.startTime);
+          const timeStr = startTime.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+          return `
+            <div class="card" style="border-left: 4px solid #667eea;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <div>
+                  <div class="card-title">${game.homeTeam} vs ${game.awayTeam}</div>
+                  <div style="font-size: 12px; color: #999;">${timeStr}</div>
+                </div>
+              </div>
+              ${moneylines.length > 0 ? `
+                <div style="margin-bottom: 12px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">MONEYLINE</div>
+                  <div style="display: grid; gap: 6px;">
+                    ${moneylines.slice(0, 2).map(ml => `
+                      <button class="market-option" data-game="${idx}" data-market="${JSON.stringify(ml).replace(/"/g, '&quot;')}" style="
+                        background: white; border: 1px solid #e0e0e0; padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px;
+                        transition: all 0.2s;
+                      " onmouseover="this.style.borderColor='#667eea'" onmouseout="this.style.borderColor='#e0e0e0'">
+                        <div style="color: #667eea; font-weight: 600;">
+                          ${ml.team} ${ml.price > 0 ? '+' : ''}${ml.price}
+                        </div>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              ${spreads.length > 0 ? `
+                <div style="margin-bottom: 12px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">SPREADS</div>
+                  <div style="display: grid; gap: 6px;">
+                    ${spreads.slice(0, 2).map(spread => `
+                      <button class="market-option" data-game="${idx}" data-market="${JSON.stringify(spread).replace(/"/g, '&quot;')}" style="
+                        background: white; border: 1px solid #e0e0e0; padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px;
+                        transition: all 0.2s;
+                      " onmouseover="this.style.borderColor='#667eea'" onmouseout="this.style.borderColor='#e0e0e0'">
+                        <div style="color: #667eea; font-weight: 600;">
+                          ${spread.team} ${spread.line > 0 ? '+' : ''}${spread.line} ${spread.price > 0 ? '+' : ''}${spread.price}
+                        </div>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              ${totals.length > 0 ? `
+                <div>
+                  <div style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">TOTALS</div>
+                  <div style="display: grid; gap: 6px;">
+                    ${totals.slice(0, 2).map(total => `
+                      <button class="market-option" data-game="${idx}" data-market="${JSON.stringify(total).replace(/"/g, '&quot;')}" style="
+                        background: white; border: 1px solid #e0e0e0; padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px;
+                        transition: all 0.2s;
+                      " onmouseover="this.style.borderColor='#667eea'" onmouseout="this.style.borderColor='#e0e0e0'">
+                        <div style="color: #667eea; font-weight: 600;">
+                          ${(total.side === 'over' ? 'O' : 'U')} ${total.line} ${total.price > 0 ? '+' : ''}${total.price}
+                        </div>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+
+        // Attach click handlers
+        document.querySelectorAll('.market-option').forEach(btn => {
+          btn.onclick = (e) => {
+            e.preventDefault();
+            const gameIdx = parseInt(btn.dataset.game);
+            const market = JSON.parse(btn.dataset.market);
+            selectMarket(gameIdx, market);
+          };
+        });
+
+        gamesContainer.style.display = 'block';
+        loadingEl.style.display = 'none';
+      } catch (err) {
+        gamesList.innerHTML = '<div class="alert error">Failed to load games: ' + err.message + '</div>';
+        gamesContainer.style.display = 'block';
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    // Close bet slip modal
+    function closeBetslip(event) {
+      if (event && event.target.id !== 'betslip-modal') return;
+      document.getElementById('betslip-modal').style.display = 'none';
+      document.getElementById('betslip-error').innerHTML = '';
+    }
+
+    // Select market and show bet slip modal
+    function selectMarket(gameIdx, market) {
+      selectedGame = gamesData[gameIdx];
+      selectedMarket = market;
+
+      let selection = '';
+      if (market.side) {
+        // Totals
+        selection = `${(market.side === 'over' ? 'O' : 'U')}${market.line}`;
+      } else if (market.line !== null && market.line !== undefined) {
+        // Spreads
+        selection = `${market.team} ${market.line > 0 ? '+' : ''}${market.line}`;
+      } else {
+        // Moneyline
+        selection = `${market.team}`;
+      }
+      
+      const odds = `${market.price > 0 ? '+' : ''}${market.price}`;
+
+      const contentEl = document.getElementById('betslip-content');
+      contentEl.innerHTML = `
+        <div>
+          <div style="margin-bottom: 12px;">
+            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Match</div>
+            <div style="font-size: 16px; font-weight: 600; color: #333;">${selectedGame.homeTeam} vs ${selectedGame.awayTeam}</div>
+          </div>
+          <div style="margin: 12px 0; padding: 12px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid #667eea;">
+            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Your Selection</div>
+            <div style="font-size: 18px; color: #667eea; font-weight: 600; margin-bottom: 4px;">${selection}</div>
+            <div style="font-size: 20px; font-weight: 700; color: #667eea;">${odds}</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('betslip-stake').value = '1';
+      document.getElementById('betslip-modal').style.display = 'block';
+      document.getElementById('betslip-error').innerHTML = '';
+    }
+
+    // Place bet from modal
+    async function placeBetFromSlip() {
+      const stake = parseInt(document.getElementById('betslip-stake').value || '1');
+      const errorEl = document.getElementById('betslip-error');
+
+      if (!selectedGame || !selectedMarket) {
+        errorEl.innerHTML = '<div class="alert error">Select a game and market</div>';
+        return;
+      }
+
+      if (!currentUser) {
+        errorEl.innerHTML = '<div class="alert error">Not logged in - please refresh and log in again</div>';
+        return;
+      }
+
+      try {
+        // Determine market type and selection text
+        let marketType = 'spread';
+        let selection = '';
+        
+        if (selectedMarket.side) {
+          // Totals
+          marketType = 'totals';
+          selection = `${selectedMarket.side.toUpperCase()} ${selectedMarket.line}`;
+        } else if (selectedMarket.line !== null && selectedMarket.line !== undefined) {
+          // Spreads
+          marketType = 'spread';
+          selection = `${selectedMarket.team} ${selectedMarket.line > 0 ? '+' : ''}${selectedMarket.line}`;
+        } else {
+          // Moneyline
+          marketType = 'moneyline';
+          selection = selectedMarket.team;
+        }
+
+        console.log('Placing bet for user:', currentUser);
+        const res = await fetch('/bets', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            username: currentUser,
+            sport: selectedSport,
+            eventId: selectedGame.eventId || selectedGame.id,
+            market: marketType,
+            selection,
+            stake,
+            odds: selectedMarket.price
+          })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          errorEl.innerHTML = '<div class="alert error">' + err.error + (err.message ? '<br>' + err.message : '') + '</div>';
+          return;
+        }
+        
+        // Success - close modal and reset
+        closeBetslip();
+        sportSelect.forEach(o => o.classList.remove('selected'));
+        selectedSport = null;
+        selectedGame = null;
+        selectedMarket = null;
+        document.getElementById('games-container').style.display = 'none';
+        loadUserData(); // Refresh bets and token display after bet
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error placing bet: ' + err.message + '</div>';
+      }
+    }
+
+    // Render active bets
+    function renderActiveBets(bets) {
+      const active = bets.filter(b => b.outcome === 'pending');
+      const el = document.getElementById('active-bets');
+      if (active.length === 0) {
+        el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><p>No active bets</p></div>';
+        return;
+      }
+      el.innerHTML = active.map(b => `
+        <div class="card bet-card pending">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <div class="card-title">${b.sport.toUpperCase()}</div>
+              <div class="card-value">${b.selection}</div>
+            </div>
+            <span class="bet-status pending">PENDING</span>
+          </div>
+          <div class="bet-details">
+            <div class="bet-detail">
+              <span class="bet-detail-label">Stake:</span>
+              <span class="bet-detail-value">${b.stake} tokens</span>
+            </div>
+            ${b.odds ? `<div class="bet-detail">
+              <span class="bet-detail-label">Odds:</span>
+              <span class="bet-detail-value">${b.odds}</span>
+            </div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render resolved bets
+    function renderResolvedBets(bets) {
+      const resolved = bets.filter(b => b.outcome && b.outcome !== 'pending').slice(-5).reverse();
+      const el = document.getElementById('resolved-bets');
+      if (resolved.length === 0) {
+        el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏁</div><p>No resolved bets yet</p></div>';
+        return;
+      }
+      el.innerHTML = resolved.map(b => `
+        <div class="card bet-card ${b.outcome}">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <div class="card-title">${b.sport.toUpperCase()}</div>
+              <div class="card-value">${b.selection}</div>
+            </div>
+            <span class="bet-status ${b.outcome}">${b.outcome.toUpperCase()}</span>
+          </div>
+          <div class="bet-details">
+            <div class="bet-detail">
+              <span class="bet-detail-label">Stake:</span>
+              <span class="bet-detail-value">${b.stake} tokens</span>
+            </div>
+            ${b.payout !== undefined ? `<div class="bet-detail">
+              <span class="bet-detail-label">Payout:</span>
+              <span class="bet-detail-value">${b.payout} tokens</span>
+            </div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Calculate streaks
+    function calculateStreaks(bets) {
+      let currentStreak = 0;
+      let maxWinStreak = 0;
+      let maxLossStreak = 0;
+      let tempWinStreak = 0;
+      let tempLossStreak = 0;
+
+      const sorted = bets.filter(b => b.outcome && b.outcome !== 'pending').sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+
+      if (sorted.length === 0) return { currentStreak: 0, maxWinStreak: 0, maxLossStreak: 0 };
+
+      // Determine current streak from most recent bet
+      let current = sorted[sorted.length - 1];
+      if (current.outcome === 'win') {
+        currentStreak = 1;
+        for (let i = sorted.length - 2; i >= 0; i--) {
+          if (sorted[i].outcome === 'win') currentStreak++;
+          else break;
+        }
+      } else if (current.outcome === 'loss') {
+        currentStreak = -1;
+        for (let i = sorted.length - 2; i >= 0; i--) {
+          if (sorted[i].outcome === 'loss') currentStreak--;
+          else break;
+        }
+      }
+
+      // Calculate all streaks
+      for (const bet of sorted) {
+        if (bet.outcome === 'win') {
+          tempWinStreak++;
+          tempLossStreak = 0;
+        } else if (bet.outcome === 'loss') {
+          tempLossStreak++;
+          tempWinStreak = 0;
+        }
+        maxWinStreak = Math.max(maxWinStreak, tempWinStreak);
+        maxLossStreak = Math.max(maxLossStreak, tempLossStreak);
+      }
+
+      return { currentStreak, maxWinStreak, maxLossStreak };
+    }
+
+    // Render stats
+    function renderStats(bets, user) {
+      const streaks = calculateStreaks(bets);
+      document.getElementById('stat-current-streak').textContent = streaks.currentStreak;
+      document.getElementById('stat-longest-win').textContent = streaks.maxWinStreak;
+      document.getElementById('stat-longest-loss').textContent = streaks.maxLossStreak;
+
+      // Find biggest underdog hit (lowest odds that won)
+      const wins = bets.filter(b => b.outcome === 'win');
+      let biggestUnderdog = null;
+      let lowestOdds = Infinity;
+      for (const bet of wins) {
+        const odds = Math.abs(bet.odds || 0);
+        if (odds > 0 && odds < lowestOdds && odds > 100) { // odds > 100 indicates underdog
+          lowestOdds = odds;
+          biggestUnderdog = bet;
+        }
+      }
+      
+      if (biggestUnderdog) {
+        document.getElementById('stat-biggest-underdog').textContent = `${biggestUnderdog.selection} @ ${biggestUnderdog.odds}`;
+      } else {
+        document.getElementById('stat-biggest-underdog').textContent = '-';
+      }
+    }
+
+    // Tab switching
+    tabs.forEach(tab => {
+      tab.onclick = () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const tabName = tab.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        document.getElementById(`tab-${tabName}`).style.display = 'block';
+        updateNav(tabName);
+      };
+    });
+
+    // Nav switching
+    navBtns.forEach(btn => {
+      btn.onclick = () => {
+        updateNav(btn.dataset.nav);
+      };
+    });
+
+    function updateNav(nav) {
+      navBtns.forEach(b => b.classList.remove('active'));
+      document.querySelector(`[data-nav="${nav}"]`).classList.add('active');
+      tabs.forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${nav}"]`).classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById(`tab-${nav}`).style.display = 'block';
+    }
+
+    // Sport selection
+    sportSelect.forEach(opt => {
+      opt.onclick = () => {
+        sportSelect.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedSport = opt.dataset.sport;
+        loadGamesForSport(selectedSport);
+      };
+    });
+
+    // Place bet
+    document.getElementById('place-bet-btn').onclick = async () => {
+      const stake = parseInt(document.getElementById('bet-stake').value || '1');
+      const errorEl = document.getElementById('place-bet-error');
+
+      if (!selectedGame || !selectedMarket) {
+        errorEl.innerHTML = '<div class="alert error">Select a game and market</div>';
+        return;
+      }
+
+      try {
+        // Determine market type and selection text
+        let marketType = 'spread';
+        let selection = '';
+        
+        if (selectedMarket.side) {
+          // Totals
+          marketType = 'totals';
+          selection = `${selectedMarket.side.toUpperCase()} ${selectedMarket.line}`;
+        } else if (selectedMarket.line !== null && selectedMarket.line !== undefined) {
+          // Spreads
+          marketType = 'spread';
+          selection = `${selectedMarket.team} ${selectedMarket.line > 0 ? '+' : ''}${selectedMarket.line}`;
+        } else {
+          // Moneyline
+          marketType = 'moneyline';
+          selection = selectedMarket.team;
+        }
+
+        const res = await fetch('/bets', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            username: currentUser,
+            sport: selectedSport,
+            eventId: selectedGame.eventId || selectedGame.id,
+            market: marketType,
+            selection,
+            stake,
+            odds: selectedMarket.price
+          })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          errorEl.innerHTML = '<div class="alert error">' + err.error + (err.message ? '<br>' + err.message : '') + '</div>';
+          return;
+        }
+        document.getElementById('bet-stake').value = '1';
+        sportSelect.forEach(o => o.classList.remove('selected'));
+        selectedSport = null;
+        selectedGame = null;
+        selectedMarket = null;
+        document.getElementById('games-container').style.display = 'none';
+        document.getElementById('bet-selection-container').style.display = 'none';
+        errorEl.innerHTML = '<div class="alert success">✓ Bet placed!</div>';
+        setTimeout(() => { errorEl.innerHTML = ''; loadUserData(); }, 1000);
+      } catch (err) {
+        errorEl.innerHTML = '<div class="alert error">Error: ' + err.message + '</div>';
+      }
+    };
+
+    // Close bet slip modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeBetslip();
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
